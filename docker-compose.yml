@@ -1,0 +1,97 @@
+version: "3"
+
+services:
+
+  # Cloudflare Tunnel　につなぎに行くサービス
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: tunnel --no-autoupdate run
+    env_file:
+      - docker.env
+    networks:
+      - internal_network
+      - external_network
+
+  # web1/web2 のコンテナの生きているものにルーティングするロードバランサ。アプリコンテナを無停止入れ替えできるようにする目的
+  lb:
+    image: jwilder/nginx-proxy:latest
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./nginx-custom.conf:/etc/nginx/conf.d/nginx-custom.conf
+    networks:
+      - internal_network
+
+  # アプリコンテナ1号
+  web1:
+    image: misskey/misskey:13.11.3
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal_network
+      - external_network
+    volumes:
+      - ./misskey-config:/misskey/.config:ro
+      - files:/misskey/files
+    environment:
+      - VIRTUAL_HOST=~^.*$  # ロードバランサの対象にするマーカーであり、仮想ホスト名の指定でもある環境変数
+
+  # アプリコンテナ2号
+  web2:
+    image: misskey/misskey:13.11.3
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal_network
+      - external_network
+    volumes:
+      - ./misskey-config:/misskey/.config:ro
+      - files:/misskey/files
+    environment:
+      - VIRTUAL_HOST=~^.*$  # ロードバランサの対象にするマーカーであり、仮想ホスト名の指定でもある環境変数
+
+  redis:
+    restart: always
+    image: redis:7-alpine
+    networks:
+      - internal_network
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: "redis-cli ping"
+      interval: 5s
+      retries: 20
+
+  db:
+    restart: always
+    image: postgres:15-alpine
+    networks:
+      - internal_network
+    env_file:
+      - docker.env
+    volumes:
+      - ./pg-init:/docker-entrypoint-initdb.d:ro
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
+      interval: 5s
+      retries: 20
+
+networks:
+  internal_network:
+    internal: true
+  external_network:
+
+volumes:
+  files:
+  pg-data:
+  redis-data:
