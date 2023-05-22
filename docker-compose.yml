@@ -25,7 +25,7 @@ services:
 
   # アプリコンテナ1号
   web1:
-    image: misskey/misskey:13.11.3
+    image: misskey/misskey:latest
     restart: always
     depends_on:
       db:
@@ -43,7 +43,7 @@ services:
 
   # アプリコンテナ2号
   web2:
-    image: misskey/misskey:13.11.3
+    image: misskey/misskey:latest
     restart: always
     depends_on:
       db:
