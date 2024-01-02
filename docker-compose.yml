@@ -2,7 +2,7 @@ version: "3"
 
 services:
 
-  # Cloudflare Tunnel　につなぎに行くサービス
+  # Cloudflare Tunnel
   tunnel:
     image: cloudflare/cloudflared:latest
     restart: always
@@ -13,18 +13,17 @@ services:
       - internal_network
       - external_network
 
-  # web1/web2 のコンテナの生きているものにルーティングするロードバランサ。アプリコンテナを無停止入れ替えできるようにする目的
+  # A load balancer to enable non-disruptive replacement of web containers
   lb:
     image: jwilder/nginx-proxy:latest
     restart: always
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./nginx-custom.conf:/etc/nginx/conf.d/nginx-custom.conf
+      - ./nginx-custom.conf:/etc/nginx/conf.d/nginx-custom.conf:ro
     networks:
       - internal_network
 
-  # アプリコンテナ1号
-  web1:
+  web:
     image: misskey/misskey:latest
     restart: always
     depends_on:
@@ -36,28 +35,13 @@ services:
       - internal_network
       - external_network
     volumes:
-      - ./misskey-config:/misskey/.config:ro
-      - files:/misskey/files
+      - ./misskey-default.yml:/misskey/.config/default.yml:ro
+      - /var/misskey/files:/misskey/files
+      - lib64:/usr/lib64
     environment:
-      - VIRTUAL_HOST=~^.*$  # ロードバランサの対象にするマーカーであり、仮想ホスト名の指定でもある環境変数
-
-  # アプリコンテナ2号
-  web2:
-    image: misskey/misskey:latest
-    restart: always
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - internal_network
-      - external_network
-    volumes:
-      - ./misskey-config:/misskey/.config:ro
-      - files:/misskey/files
-    environment:
-      - VIRTUAL_HOST=~^.*$  # ロードバランサの対象にするマーカーであり、仮想ホスト名の指定でもある環境変数
+      - VIRTUAL_HOST=~^.*$  # marker for lb
+      - VIRTUAL_PORT=3000  # target port for lb
+      - LD_PRELOAD=/usr/lib64/libjemalloc.so.2  # use jemalloc. No problem if it's not installed
 
   redis:
     restart: always
@@ -65,7 +49,7 @@ services:
     networks:
       - internal_network
     volumes:
-      - redis-data:/data
+      - /var/misskey/redis-data:/data
     healthcheck:
       test: "redis-cli ping"
       interval: 5s
@@ -79,8 +63,8 @@ services:
     env_file:
       - docker.env
     volumes:
-      - ./pg-init:/docker-entrypoint-initdb.d:ro
-      - pg-data:/var/lib/postgresql/data
+      - ./pg-init.sql:/docker-entrypoint-initdb.d/pg-init.sql:ro
+      - /var/misskey/db:/var/lib/postgresql/data
     healthcheck:
       test: "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
       interval: 5s
@@ -92,6 +76,5 @@ networks:
   external_network:
 
 volumes:
-  files:
-  pg-data:
-  redis-data:
+  lib64:
+    name: misskey-lib64
