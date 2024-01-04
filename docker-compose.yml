@@ -31,6 +31,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    #ports: ["3000:3000"]  # enable this if you want to access directly
     networks:
       - internal_network
       - external_network
