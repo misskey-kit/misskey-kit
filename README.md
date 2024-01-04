@@ -37,8 +37,15 @@ misskeyサーバーを簡単に立てるためのdocker compose定義
     4. `docker compose up -d web`としてMisskeyを起動します
     5. http://localhost:3000 にアクセスします。バックアップしたときの状態に戻っているはずです
 
-
 ## 追加: misskeyのアップデート
 
 1. `./update-misskey.sh`を実行します。これは [公式Dockerhub](https://hub.docker.com/r/misskey/misskey) から最新のイメージを取得し、アプリケーションインスタンスを更新します。このとき、新しいバージョンのコンテナを起動してから既存のコンテナを停止するため、サービスは無停止です
 2. β版など、latest以外のタグを使いたい場合は、`./update-misskey.sh TAG`のようにタグ名を指定します
+
+## 追加: libjemallocを使ってメモリ効率を向上させる
+
+libjemallocは、Linuxのメモリ管理ライブラリよりも高効率な互換メモリ管理ライブラリです。これを使うことで、Misskeyのメモリ使用量を抑えることができます。
+
+1. `./install-libjemalloc.sh`を実行します。これはjemallocをインストールし、Misskeyのコンテナを再起動することなく有効になります
+Misskeyをアップデートしたりしてもlibjemallocは有効のままです
+    - dockerに作ったボリューム(misskey-lib64)をインストール先にしているためです
