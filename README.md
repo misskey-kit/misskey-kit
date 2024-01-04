@@ -1,5 +1,8 @@
 # misskey-kit
-misskeyサーバーを簡単に立てるためのdocker compose定義
+misskeyサーバーを簡単に立てるためのdocker compose定義  
+Cloudflareを使うので固定IPアドレスは不要、それどころかグローバルIPアドレスさえ不要です。
+
+用意するもの: dockerコマンドとdocker-composeコマンドが動くLinux環境（WSL可）
 
 ## クイックスタート: localhostでの起動を試す場合
 
@@ -44,8 +47,8 @@ misskeyサーバーを簡単に立てるためのdocker compose定義
 
 ## 追加: libjemallocを使ってメモリ効率を向上させる
 
-libjemallocは、Linuxのメモリ管理ライブラリよりも高効率な互換メモリ管理ライブラリです。これを使うことで、Misskeyのメモリ使用量を抑えることができます。
+libjemallocは、標準のメモリ管理ライブラリよりも高効率な互換メモリ管理ライブラリです。これを使うことで、Misskeyのメモリ使用量を抑えることができます。
 
-1. `./install-libjemalloc.sh`を実行します。これはjemallocをインストールし、Misskeyのコンテナを再起動することなく有効になります
+1. `./install-libjemalloc.sh`を実行します。これはjemallocをインストールし、Misskeyのコンテナを再起動することなく有効になります  
 Misskeyをアップデートしたりしてもlibjemallocは有効のままです
     - dockerに作ったボリューム(misskey-lib64)をインストール先にしているためです
