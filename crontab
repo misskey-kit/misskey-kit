@@ -1,12 +1,3 @@
-PATH=$PATH:/usr/local/bin:/usr/bin
-MISSKEY_KIT_DIR=# Fill
-OBJECT_STORAGE_ENDPOINT=# Leave as is when you use S3.
-OBJECT_STORAGE_BUCKET=# Fill
-
-# Periodic app container replacement
-19 11  * * * cd $MISSKEY_KIT_DIR; docker compose up -d --wait web1 && sleep 2 && docker compose stop web2
-19 23  * * * cd $MISSKEY_KIT_DIR; docker compose up -d --wait web2 && sleep 2 && docker compose stop web1
-
 # Hourly db backup
-36 *  * * * cd $MISSKEY_KIT_DIR; docker compose exec db pg_dump -d misskey -F custom | docker run -i --env-file docker.env amazon/aws-cli ${OBJECT_STORAGE_ENDPOINT:+--endpoint-url $OBJECT_STORAGE_ENDPOINT} s3 cp - s3://${OBJECT_STORAGE_BUCKET}/db_dump
+36 * * * * YOUR_MISSKEY_KIT_DIR/backup-db.sh
 
