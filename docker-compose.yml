@@ -54,7 +54,8 @@ services:
 
   db:
     restart: always
-    image: postgres:15-alpine
+    build: 
+      context: pg_bigm
     networks:
       - internal_network
     env_file:
