@@ -62,7 +62,7 @@ services:
       - docker.env
     volumes:
       - ./pg-init.sql:/docker-entrypoint-initdb.d/pg-init.sql:ro
-      - /var/misskey/db:/var/lib/postgresql/data
+      - ./var/db:/var/lib/postgresql/data
     healthcheck:
       test: "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
       interval: 5s
