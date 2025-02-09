@@ -39,13 +39,13 @@ Cloudflareを使うので固定IPアドレスは不要、それどころかグ�
 8. etc/crontab に毎時のbin/backup-db.sh呼び出しが設定されているので、この通りに自動バックアップされるようになります
 9. リストアの練習は、他のサーバーに同じ設定ファイルを置いて行うのがよいでしょう
     1. `docker compose up -d db` としてDBを起動します
-    2. `./restore-db.sh`としてDBをリストアします
+    2. `bin/restore-db.sh`としてDBをリストアします
     4. `docker compose up -d web`としてMisskeyを起動します
     5. http://localhost/ にアクセスします。バックアップしたときの状態に戻っているはずです
 10. 実際のリストアの際には、次のような手順になるでしょう
     1. `docker compose down` でいったん全コンテナを終了します
     2. `docker compose up -d db` としてDBだけを起動します
-    2. `./restore-db.sh`としてDBをリストアします
+    2. `bin/restore-db.sh`としてDBをリストアします
     4. `docker compose up -d web`としてMisskeyを起動します
     5. http://localhost/ にアクセスし、バックアップしたときの状態に戻っていることを確認します
     6. `docker-compose up -d --wait tunnel`を実行しWebに公開します
