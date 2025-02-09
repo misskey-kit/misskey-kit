@@ -1,3 +1,16 @@
-# Hourly db backup
-36 * * * * YOUR_MISSKEY_KIT_DIR/backup-db.sh
+LANG=ja_JP.UTF-8
 
+# Hourly db backup
+18 * * * * /misskey/bin/backup-db.sh
+
+# Ai-chan
+30 14 * * * /misskey/bin/stop-ai.sh
+30 22 * * * /misskey/bin/start-ai.sh
+30 14 * * 0 /misskey/bin/note-ai.sh みなさん、おやすみなさい
+30 14 * * 1 /misskey/bin/note-ai.sh もうねます、みなさんも早くねてくださいね
+30 14 * * 2 /misskey/bin/note-ai.sh ふあーあ、おやすみなさい⋯
+30 14 * * 3 /misskey/bin/note-ai.sh 今日も楽しかったです。おやすみなさい
+30 14 * * 4 /misskey/bin/note-ai.sh おやすみなさい、いい夢見てください
+30 14 * * 5 /misskey/bin/note-ai.sh また明日お話してくださいね。おやすみなさい
+30 14 * * 6 /misskey/bin/note-ai.sh もうおふとんに入る時間ですね。おやすみなさい
+#* * * * * /misskey/bin/note-ai.sh ぽーん

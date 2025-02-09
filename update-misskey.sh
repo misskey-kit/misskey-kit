@@ -3,10 +3,9 @@
 # Usage: ./update-misskey.sh [TAG]
 
 set -euCo pipefail
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-
-. "$SCRIPT_DIR"/docker.env
-export COMPOSE_FILE="$SCRIPT_DIR"/docker-compose.yml
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>&1 >/dev/null && pwd)"
+export COMPOSE_PROJECT_DIR="${COMPOSE_PROJECT_DIR:-"${SCRIPT_DIR}"/..}"
+export COMPOSE_FILE="$SCRIPT_DIR"/../docker-compose.yml
 
 TAG="${1:-latest}"
 

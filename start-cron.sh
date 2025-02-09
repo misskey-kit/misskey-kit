@@ -7,6 +7,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>&1 >/dev/null && pwd)"
 export COMPOSE_PROJECT_DIR="${COMPOSE_PROJECT_DIR:-"${SCRIPT_DIR}"/..}"
 export COMPOSE_FILE="$SCRIPT_DIR"/../docker-compose.yml
 
-docker compose up -d --no-recreate --wait web cron lb
+docker compose up -d cron
 
 "$SCRIPT_DIR"/enable-bigm-search.sh

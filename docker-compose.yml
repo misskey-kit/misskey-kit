@@ -1,3 +1,4 @@
+name: misskey-kit
 services:
 
   # Cloudflare Tunnel
@@ -6,9 +7,8 @@ services:
     restart: always
     command: tunnel --no-autoupdate run
     env_file:
-      - docker.env
+      - ./etc/docker.env
     networks:
-      - internal_network
       - external_network
 
   # A load balancer to enable non-disruptive replacement of web containers
@@ -17,9 +17,10 @@ services:
     restart: always
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./nginx-custom.conf:/etc/nginx/conf.d/nginx-custom.conf:ro
+      - ${COMPOSE_PROJECT_DIR:-.}/etc/nginx-custom.conf:/etc/nginx/conf.d/nginx-custom.conf:ro
+    ports: ["80:80"]
     networks:
-      - internal_network
+      - external_network
 
   web:
     image: misskey/misskey:latest
@@ -29,13 +30,14 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    #ports: ["3000:3000"]  # enable this if you want to access directly
+      lb:
+        condition: service_started
     networks:
       - internal_network
       - external_network
     volumes:
-      - ./misskey-default.yml:/misskey/.config/default.yml:ro
-      - /var/misskey/files:/misskey/files
+      - ${COMPOSE_PROJECT_DIR:-.}/etc/misskey-default.yml:/misskey/.config/default.yml:ro
+      - misskey-data:/misskey/files
     environment:
       - VIRTUAL_HOST=~^.*$$  # marker for lb
       - VIRTUAL_PORT=3000  # target port for lb
@@ -46,7 +48,7 @@ services:
     networks:
       - internal_network
     volumes:
-      - /var/misskey/redis-data:/data
+      - redis-data:/data
     healthcheck:
       test: "redis-cli ping"
       interval: 5s
@@ -59,16 +61,44 @@ services:
     networks:
       - internal_network
     env_file:
-      - docker.env
+      - ./etc/docker.env
     volumes:
-      - ./pg-init.sql:/docker-entrypoint-initdb.d/pg-init.sql:ro
-      - ./var/db:/var/lib/postgresql/data
+      - ${COMPOSE_PROJECT_DIR:-.}/etc/pg-init.sql:/docker-entrypoint-initdb.d/pg-init.sql:ro
+      - db-data:/var/lib/postgresql/data
     healthcheck:
       test: "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
       interval: 5s
       retries: 20
+  
+  ai:
+    build: 
+      context: ai
+      args:
+        - enable_mecab=1
+    networks:
+      - external_network
+    env_file:
+      - ./etc/docker.env
+    volumes:
+      - ai-data:/ai/data/
+
+  cron:
+    build:
+      context: cron
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${COMPOSE_PROJECT_DIR:-.}/:/misskey/:ro
+    environment:
+      - COMPOSE_PROJECT_DIR=${COMPOSE_PROJECT_DIR:-${PWD:-.}}
+    network_mode: none
 
 networks:
   internal_network:
     internal: true
   external_network:
+
+volumes:
+  db-data:
+  redis-data:
+  misskey-data:
+  ai-data:
