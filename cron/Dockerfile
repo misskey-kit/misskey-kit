@@ -1,6 +1,6 @@
-FROM docker AS docker
+FROM public.ecr.aws/docker/library/docker:latest AS docker
 
-FROM ubuntu
+FROM public.ecr.aws/ubuntu/ubuntu:latest
 
 RUN apt update \
     && apt install -y busybox entr \
