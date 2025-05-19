@@ -90,7 +90,8 @@ services:
       - ${COMPOSE_PROJECT_DIR:-.}/:/misskey/:ro
     environment:
       - COMPOSE_PROJECT_DIR=${COMPOSE_PROJECT_DIR:-${PWD:-.}}
-    network_mode: none
+    network_mode:
+      - external_network  # needs internet access to perform git pull or docker pull
 
 networks:
   internal_network:
